@@ -1,0 +1,471 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2113.6">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
+    span.s1 {font: 12.0px 'Apple Color Emoji'}
+  </style>
+</head>
+<body>
+<p class="p1">&lt;!DOCTYPE html&gt;</p>
+<p class="p1">&lt;html lang="en"&gt;</p>
+<p class="p1">&lt;head&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta charset="UTF-8"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;title&gt;Guess Baby Merritt's Name!&lt;/title&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"&gt;&lt;/script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"&gt;&lt;/script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"&gt;&lt;/script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"&gt;&lt;/script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"&gt;&lt;/script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;script src="https://cdn.tailwindcss.com"&gt;&lt;/script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;style&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>body { margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/style&gt;</p>
+<p class="p1">&lt;/head&gt;</p>
+<p class="p1">&lt;body&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div id="root"&gt;&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;script type="text/babel"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const { useState, useEffect } = React;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Firebase Configuration</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const firebaseConfig = {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>apiKey: "AIzaSyBMXpoOPqYGZHCLgIWaVdAB0kuiOL09UZg",</p>
+<p class="p1"><span class="Apple-converted-space">            </span>authDomain: "baby-merritt-trivia-game.firebaseapp.com",</p>
+<p class="p1"><span class="Apple-converted-space">            </span>databaseURL: "https://baby-merritt-trivia-game-default-rtdb.firebaseio.com",</p>
+<p class="p1"><span class="Apple-converted-space">            </span>projectId: "baby-merritt-trivia-game",</p>
+<p class="p1"><span class="Apple-converted-space">            </span>storageBucket: "baby-merritt-trivia-game.firebasestorage.app",</p>
+<p class="p1"><span class="Apple-converted-space">            </span>messagingSenderId: "480694794861",</p>
+<p class="p1"><span class="Apple-converted-space">            </span>appId: "1:480694794861:web:fe34b5b1d87de85b855d64"</p>
+<p class="p1"><span class="Apple-converted-space">        </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Initialize Firebase</p>
+<p class="p1"><span class="Apple-converted-space">        </span>firebase.initializeApp(firebaseConfig);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const database = firebase.database();</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>const CLUES = [</p>
+<p class="p1"><span class="Apple-converted-space">            </span>"A treat after you eat Chinese takeout and YOLO!",</p>
+<p class="p1"><span class="Apple-converted-space">            </span>"R&amp;B concert in the quad, anyone?",</p>
+<p class="p1"><span class="Apple-converted-space">            </span>"Whenever, wherever, Whatever meets a jazz trumpet icon",</p>
+<p class="p1"><span class="Apple-converted-space">            </span>"Good to the last drop meets Sammy [blank] Jr."</p>
+<p class="p1"><span class="Apple-converted-space">        </span>];</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>const CLUE_DURATION = 15 * 60 * 1000;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const CORRECT_ANSWER = "Maxwell Davis Merritt";</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>function Card({ children, className = "" }) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>return &lt;div className={`bg-white rounded-lg shadow-lg ${className}`}&gt;{children}&lt;/div&gt;;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>function CardHeader({ children }) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>return &lt;div className="px-6 py-4 border-b"&gt;{children}&lt;/div&gt;;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>function CardTitle({ children, className = "" }) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>return &lt;h2 className={`font-bold ${className}`}&gt;{children}&lt;/h2&gt;;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>function CardContent({ children }) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>return &lt;div className="px-6 py-4"&gt;{children}&lt;/div&gt;;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>function Button({ children, onClick, disabled, className = "" }) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>return (</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;button</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>onClick={onClick}</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>disabled={disabled}</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>className={`px-4 py-2 rounded font-medium transition-colors ${</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>disabled<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                            </span>? 'bg-gray-300 cursor-not-allowed'<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                            </span>: 'text-white hover:opacity-90'</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>} ${className}`}</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>{children}</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>function Input({ placeholder, value, onChange, onKeyPress, className = "" }) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>return (</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;input</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>type="text"</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>placeholder={placeholder}</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>value={value}</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>onChange={onChange}</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>onKeyPress={onKeyPress}</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>className={`w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${className}`}</p>
+<p class="p1"><span class="Apple-converted-space">                </span>/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>function Alert({ children, className = "" }) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>return &lt;div className={`p-4 rounded border ${className}`}&gt;{children}&lt;/div&gt;;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>function AlertDescription({ children, className = "" }) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>return &lt;div className={className}&gt;{children}&lt;/div&gt;;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>function App() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const [isAdmin, setIsAdmin] = useState(false);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const [gameState, setGameState] = useState({</p>
+<p class="p1"><span class="Apple-converted-space">                </span>currentClue: -1,</p>
+<p class="p1"><span class="Apple-converted-space">                </span>clueStartTime: null,</p>
+<p class="p1"><span class="Apple-converted-space">                </span>guesses: [],</p>
+<p class="p1"><span class="Apple-converted-space">                </span>revealed: false</p>
+<p class="p1"><span class="Apple-converted-space">            </span>});</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const [userGuess, setUserGuess] = useState('');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const [hasGuessed, setHasGuessed] = useState(false);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const [submittedGuess, setSubmittedGuess] = useState('');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const [timeRemaining, setTimeRemaining] = useState(0);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const [userName, setUserName] = useState('');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const [hasEnteredName, setHasEnteredName] = useState(false);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>useEffect(() =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const path = window.location.pathname + window.location.hash;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>setIsAdmin(path.includes('admin'));</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                </span>const userLocal = localStorage.getItem('babyNameUser');</p>
+<p class="p1"><span class="Apple-converted-space">                </span>if (userLocal) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>const data = JSON.parse(userLocal);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>setHasGuessed(data.hasGuessed || false);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>setSubmittedGuess(data.submittedGuess || '');</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>setUserName(data.userName || '');</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>setHasEnteredName(data.hasEnteredName || false);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                </span>const gameRef = database.ref('gameState');</p>
+<p class="p1"><span class="Apple-converted-space">                </span>gameRef.on('value', (snapshot) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>const data = snapshot.val();</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>if (data) {</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>setGameState(data);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                </span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                </span>return () =&gt; gameRef.off();</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}, []);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>useEffect(() =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>if (gameState.currentClue &gt;= 0 &amp;&amp; gameState.clueStartTime) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>const interval = setInterval(() =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>const elapsed = Date.now() - gameState.clueStartTime;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>const remaining = Math.max(0, CLUE_DURATION - elapsed);</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>setTimeRemaining(remaining);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>}, 100);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>return () =&gt; clearInterval(interval);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}, [gameState.currentClue, gameState.clueStartTime]);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>useEffect(() =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const userData = { hasGuessed, submittedGuess, userName, hasEnteredName };</p>
+<p class="p1"><span class="Apple-converted-space">                </span>localStorage.setItem('babyNameUser', JSON.stringify(userData));</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}, [hasGuessed, submittedGuess, userName, hasEnteredName]);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>const updateGameState = async (newState) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>await database.ref('gameState').set(newState);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>const startGame = async () =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>await updateGameState({</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>currentClue: 0,</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>clueStartTime: Date.now(),</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>guesses: [],</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>revealed: false</p>
+<p class="p1"><span class="Apple-converted-space">                </span>});</p>
+<p class="p1"><span class="Apple-converted-space">            </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>const nextClue = async () =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>if (gameState.currentClue &lt; CLUES.length - 1) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>await updateGameState({</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>...gameState,</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>currentClue: gameState.currentClue + 1,</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>clueStartTime: Date.now()</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>});</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>const resetGame = async () =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>await updateGameState({</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>currentClue: -1,</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>clueStartTime: null,</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>guesses: [],</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>revealed: false</p>
+<p class="p1"><span class="Apple-converted-space">                </span>});</p>
+<p class="p1"><span class="Apple-converted-space">                </span>setHasGuessed(false);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>setSubmittedGuess('');</p>
+<p class="p1"><span class="Apple-converted-space">                </span>setUserName('');</p>
+<p class="p1"><span class="Apple-converted-space">                </span>setHasEnteredName(false);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>localStorage.removeItem('babyNameUser');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>const revealAnswer = async () =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>await updateGameState({</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>...gameState,</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>revealed: true</p>
+<p class="p1"><span class="Apple-converted-space">                </span>});</p>
+<p class="p1"><span class="Apple-converted-space">            </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>const submitGuess = async () =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>if (!userGuess.trim() || !userName.trim()) return;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                </span>const guess = {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>name: userName,</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>guess: userGuess.trim(),</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>clue: gameState.currentClue + 1,</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>timestamp: Date.now()</p>
+<p class="p1"><span class="Apple-converted-space">                </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                </span>await updateGameState({</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>...gameState,</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>guesses: [...gameState.guesses, guess]</p>
+<p class="p1"><span class="Apple-converted-space">                </span>});</p>
+<p class="p2"><span class="Apple-converted-space">                </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>setSubmittedGuess(userGuess.trim());</p>
+<p class="p1"><span class="Apple-converted-space">                </span>setHasGuessed(true);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>setUserGuess('');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>const checkGuess = (guess) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const normalized = guess.toLowerCase().trim();</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const correct = CORRECT_ANSWER.toLowerCase();</p>
+<p class="p1"><span class="Apple-converted-space">                </span>return normalized === correct ||<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                       </span>normalized === "maxwell davis" ||</p>
+<p class="p1"><span class="Apple-converted-space">                       </span>normalized.replace(/\s+/g, '') === "maxwelldavis" ||</p>
+<p class="p1"><span class="Apple-converted-space">                       </span>normalized.replace(/\s+/g, '') === correct.replace(/\s+/g, '');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>const correctGuesses = gameState.guesses.filter(g =&gt; checkGuess(g.guess));</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>const formatTime = (ms) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const minutes = Math.floor(ms / 60000);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const seconds = Math.floor((ms % 60000) / 1000);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>return `${minutes}:${seconds.toString().padStart(2, '0')}`;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (isAdmin) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>return (</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div className="min-h-screen bg-gradient-to-br from-blue-50 to-pink-50 p-4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div className="max-w-4xl mx-auto"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;Card className="mb-6"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;CardHeader&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;CardTitle className="text-2xl text-center"&gt;<span class="s1">🎮</span> Admin Panel - Baby Name Game&lt;/CardTitle&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;/CardHeader&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;CardContent&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;div className="space-y-4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>{gameState.currentClue === -1 ? (</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;Button onClick={startGame} className="w-full bg-green-600"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>Start Game (Reveal Clue 1)</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;/Button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>) : (</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>&lt;div className="text-center p-4 bg-blue-100 rounded-lg"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                    </span>&lt;div className="text-lg font-bold"&gt;Current: Clue {gameState.currentClue + 1}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                    </span>&lt;div className="text-2xl font-mono mt-2"&gt;{formatTime(timeRemaining)}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>{gameState.currentClue &lt; CLUES.length - 1 &amp;&amp; (</p>
+<p class="p1"><span class="Apple-converted-space">                                                    </span>&lt;Button onClick={nextClue} className="w-full bg-blue-600"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                        </span>Reveal Clue {gameState.currentClue + 2}</p>
+<p class="p1"><span class="Apple-converted-space">                                                    </span>&lt;/Button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>)}</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>{gameState.currentClue === CLUES.length - 1 &amp;&amp; !gameState.revealed &amp;&amp; (</p>
+<p class="p1"><span class="Apple-converted-space">                                                    </span>&lt;Button onClick={revealAnswer} className="w-full bg-purple-600"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                        </span><span class="s1">🎉</span> Reveal the Answer!</p>
+<p class="p1"><span class="Apple-converted-space">                                                    </span>&lt;/Button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>)}</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>&lt;Button onClick={resetGame} className="w-full bg-red-600"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                    </span>Reset Game</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>&lt;/Button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>)}</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;/CardContent&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;/Card&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;Card&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;CardHeader&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;CardTitle&gt;Submitted Guesses ({gameState.guesses.length})&lt;/CardTitle&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;/CardHeader&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;CardContent&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>{gameState.revealed &amp;&amp; (</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;div className="mb-6 p-6 bg-gradient-to-r from-purple-100 to-pink-100 rounded-lg border-2 border-purple-300"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;div className="text-center"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>&lt;div className="text-3xl font-bold text-purple-700 mb-4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                    </span><span class="s1">👶🏾</span> {CORRECT_ANSWER} <span class="s1">🧸</span></p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>{correctGuesses.length &gt; 0 ? (</p>
+<p class="p1"><span class="Apple-converted-space">                                                    </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                        </span>&lt;div className="text-xl font-semibold text-green-700 mb-3"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                            </span><span class="s1">🎉</span> Correct Guesses! <span class="s1">🎉</span></p>
+<p class="p1"><span class="Apple-converted-space">                                                        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                        </span>&lt;div className="space-y-2"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                            </span>{correctGuesses.map((g, idx) =&gt; (</p>
+<p class="p1"><span class="Apple-converted-space">                                                                </span>&lt;div key={idx} className="p-3 bg-white rounded border-2 border-green-400"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                                    </span>&lt;div className="font-bold text-green-700"&gt;{g.name}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                                    </span>&lt;div className="text-sm text-gray-600"&gt;Guessed after Clue {g.clue}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                            </span>))}</p>
+<p class="p1"><span class="Apple-converted-space">                                                        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>) : (</p>
+<p class="p1"><span class="Apple-converted-space">                                                    </span>&lt;div className="text-lg text-gray-600"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                        </span>No one guessed correctly, but everyone had fun! <span class="s1">🎊</span></p>
+<p class="p1"><span class="Apple-converted-space">                                                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>)}</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>)}</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;div className="space-y-2 max-h-96 overflow-y-auto"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>{gameState.guesses.length === 0 ? (</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;p className="text-gray-500 text-center py-4"&gt;No guesses yet...&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>) : (</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>gameState.guesses.map((g, idx) =&gt; (</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>&lt;div key={idx} className="p-3 bg-gray-50 rounded border"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                    </span>&lt;div className="flex justify-between items-start"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                        </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                            </span>&lt;div className="font-semibold"&gt;{g.name}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                            </span>&lt;div className="text-lg text-blue-600"&gt;{g.guess}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                        </span>&lt;div className="text-sm text-gray-500"&gt;Clue {g.clue}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>))</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>)}</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;/CardContent&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;/Card&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>return (</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;div className="min-h-screen bg-gradient-to-br from-blue-50 to-pink-50 p-4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div className="max-w-lg mx-auto"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;Card className="mb-6"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;CardHeader&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;CardTitle className="text-2xl text-center"&gt;<span class="s1">👶🏾</span> Guess Baby Merritt's Name! <span class="s1">🧸</span>&lt;/CardTitle&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;/CardHeader&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;CardContent&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>{!hasEnteredName ? (</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;div className="space-y-4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;p className="text-center text-gray-600"&gt;Enter your name to play:&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;Input</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>placeholder="Your name"</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>value={userName}</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>onChange={(e) =&gt; setUserName(e.target.value)}</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>onKeyPress={(e) =&gt; e.key === 'Enter' &amp;&amp; userName.trim() &amp;&amp; setHasEnteredName(true)}</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;Button<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>onClick={() =&gt; setHasEnteredName(true)}<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>disabled={!userName.trim()}</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>className="w-full bg-blue-600"</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>Let's Play!</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;/Button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>) : gameState.currentClue === -1 ? (</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;div className="text-center py-8"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;p className="text-xl"&gt;<span class="s1">🎉</span> Welcome, {userName}!&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;p className="text-gray-600 mt-4"&gt;The game hasn't started yet. Stay tuned!&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>) : gameState.revealed ? (</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;div className="text-center py-8 space-y-6"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;div className="text-4xl mb-4"&gt;<span class="s1">🎊</span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;div className="text-2xl font-bold text-purple-700"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>Baby Merritt's Name Is...</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;div className="text-4xl font-bold text-purple-900 my-6"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>{CORRECT_ANSWER}</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>{hasGuessed &amp;&amp; checkGuess(submittedGuess) ? (</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;Alert className="bg-green-50 border-green-300"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>&lt;AlertDescription className="text-center"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                    </span>&lt;div className="text-2xl mb-2"&gt;<span class="s1">🎉🎉🎉</span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                    </span>&lt;div className="text-xl font-bold text-green-700"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                        </span>Congratulations, {userName}!</p>
+<p class="p1"><span class="Apple-converted-space">                                                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                    </span>&lt;div className="text-green-600 mt-2"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                        </span>You guessed correctly!</p>
+<p class="p1"><span class="Apple-converted-space">                                                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>&lt;/AlertDescription&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;/Alert&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>) : hasGuessed ? (</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;Alert className="bg-blue-50 border-blue-300"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>&lt;AlertDescription className="text-center"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                    </span>&lt;div className="font-semibold text-blue-700"&gt;Your guess: {submittedGuess}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                    </span>&lt;div className="text-sm text-gray-600 mt-2"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                        </span>Thanks for playing, {userName}! <span class="s1">🎊</span></p>
+<p class="p1"><span class="Apple-converted-space">                                                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>&lt;/AlertDescription&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;/Alert&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>) : (</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;p className="text-gray-600"&gt;Thanks for joining us, {userName}! <span class="s1">🎊</span>&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>)}</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>) : (</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;div className="space-y-6"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;div className="text-center"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;div className="text-sm text-gray-500 mb-2"&gt;Clue {gameState.currentClue + 1} of {CLUES.length}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;div className="text-3xl font-mono font-bold text-blue-600 mb-4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>{formatTime(timeRemaining)}</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;Alert className="bg-blue-50 border-blue-300"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;AlertDescription className="text-lg text-center font-medium"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>{CLUES[gameState.currentClue]}</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;/AlertDescription&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;/Alert&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>{hasGuessed ? (</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;div className="space-y-4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>&lt;Alert className="bg-green-50 border-green-200"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                    </span>&lt;AlertDescription className="text-center"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                        </span>&lt;div className="font-semibold mb-1"&gt;Your Guess:&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                        </span>&lt;div className="text-xl text-green-700"&gt;{submittedGuess}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                    </span>&lt;/AlertDescription&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>&lt;/Alert&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>&lt;p className="text-center text-gray-600 text-sm"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                    </span>Wait for the next clue or the final reveal!</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>) : (</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;div className="space-y-4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>&lt;p className="text-center text-sm text-gray-600"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                    </span>Remember: You can only guess ONCE!</p>
+<p class="p1"><span class="Apple-converted-space">                                                    </span>&lt;br /&gt;Wait for more clues if you're not sure.</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>&lt;Input</p>
+<p class="p1"><span class="Apple-converted-space">                                                    </span>placeholder="Enter your guess (First Middle Last)"</p>
+<p class="p1"><span class="Apple-converted-space">                                                    </span>value={userGuess}</p>
+<p class="p1"><span class="Apple-converted-space">                                                    </span>onChange={(e) =&gt; setUserGuess(e.target.value)}</p>
+<p class="p1"><span class="Apple-converted-space">                                                    </span>onKeyPress={(e) =&gt; e.key === 'Enter' &amp;&amp; submitGuess()}</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>&lt;Button onClick={submitGuess} disabled={!userGuess.trim()} className="w-full bg-blue-600"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                    </span>Submit My Guess</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>&lt;/Button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>)}</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>)}</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;/CardContent&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/Card&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div className="text-center text-sm text-gray-500"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;p&gt;March 7th 2026 Baby Shower for Alexis &amp; Mike <span class="s1">🍼</span>&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>ReactDOM.render(&lt;App /&gt;, document.getElementById('root'));</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/script&gt;</p>
+<p class="p1">&lt;/body&gt;</p>
+<p class="p1">&lt;/html&gt;</p>
+</body>
+</html>
