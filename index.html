@@ -142,6 +142,12 @@
                     }
                 }
 
+                // Get the last known reset timestamp from localStorage
+                const lastKnownReset = localStorage.getItem('lastResetTimestamp');
+                if (lastKnownReset) {
+                    setLastResetTimestamp(parseInt(lastKnownReset));
+                }
+
                 const gameRef = database.ref('gameState');
                 const listener = gameRef.on('value', (snapshot) => {
                     const data = snapshot.val();
@@ -157,35 +163,19 @@
                         setGameState(newState);
                         setForceUpdate(prev => prev + 1);
                         
-                        // Check if game was reset - if Firebase shows game hasn't started but user has local data, clear it
-                        if (newState.currentClue === -1 && newState.guesses.length === 0 && !adminMode) {
-                            const userLocal = localStorage.getItem('babyNameUser');
-                            if (userLocal) {
-                                try {
-                                    const userData = JSON.parse(userLocal);
-                                    if (userData.hasGuessed) {
-                                        // Game was reset, clear user data
-                                        console.log('Detected game reset, clearing user data');
-                                        localStorage.removeItem('babyNameUser');
-                                        setHasGuessed(false);
-                                        setSubmittedGuess('');
-                                        setUserName('');
-                                        setHasEnteredName(false);
-                                    }
-                                } catch (e) {
-                                    console.error('Error checking user data:', e);
-                                }
+                        // Check if game was reset - only reload if reset timestamp is NEW and different
+                        if (data.resetTimestamp && !adminMode) {
+                            const storedResetTimestamp = localStorage.getItem('lastResetTimestamp');
+                            const lastReset = storedResetTimestamp ? parseInt(storedResetTimestamp) : 0;
+                            
+                            // Only reload if this is a NEW reset (timestamp is different and newer)
+                            if (data.resetTimestamp !== lastReset && data.resetTimestamp > lastReset) {
+                                console.log('New reset detected, reloading...');
+                                localStorage.setItem('lastResetTimestamp', data.resetTimestamp.toString());
+                                localStorage.removeItem('babyNameUser');
+                                sessionStorage.clear();
+                                window.location.href = window.location.href.split('?')[0] + '?t=' + Date.now();
                             }
-                        }
-                        
-                        // Detect reset timestamp change and force reload
-                        if (data.resetTimestamp && data.resetTimestamp !== lastResetTimestamp && !adminMode) {
-                            setLastResetTimestamp(data.resetTimestamp);
-                            // Clear everything before reload
-                            localStorage.clear();
-                            sessionStorage.clear();
-                            // Hard reload with cache bust
-                            window.location.href = window.location.href.split('?')[0] + '?t=' + Date.now();
                         }
                     }
                 }, (error) => {
