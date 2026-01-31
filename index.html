@@ -18,7 +18,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState, useEffect, useRef } = React;
 
         const firebaseConfig = {
             apiKey: "AIzaSyBMXpoOPqYGZHCLgIWaVdAB0kuiOL09UZg",
@@ -30,7 +30,9 @@
             appId: "1:480694794861:web:fe34b5b1d87de85b855d64"
         };
 
-        firebase.initializeApp(firebaseConfig);
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
         const database = firebase.database();
 
         const CLUES = [
@@ -110,6 +112,13 @@
             const [timeRemaining, setTimeRemaining] = useState(0);
             const [userName, setUserName] = useState('');
             const [hasEnteredName, setHasEnteredName] = useState(false);
+            const [forceUpdate, setForceUpdate] = useState(0);
+
+            const gameStateRef = useRef(gameState);
+            
+            useEffect(() => {
+                gameStateRef.current = gameState;
+            }, [gameState]);
 
             useEffect(() => {
                 const path = window.location.pathname + window.location.hash;
@@ -117,27 +126,39 @@
 
                 const userLocal = localStorage.getItem('babyNameUser');
                 if (userLocal) {
-                    const data = JSON.parse(userLocal);
-                    setHasGuessed(data.hasGuessed || false);
-                    setSubmittedGuess(data.submittedGuess || '');
-                    setUserName(data.userName || '');
-                    setHasEnteredName(data.hasEnteredName || false);
+                    try {
+                        const data = JSON.parse(userLocal);
+                        setHasGuessed(data.hasGuessed || false);
+                        setSubmittedGuess(data.submittedGuess || '');
+                        setUserName(data.userName || '');
+                        setHasEnteredName(data.hasEnteredName || false);
+                    } catch (e) {
+                        console.error('Error loading user data:', e);
+                    }
                 }
 
                 const gameRef = database.ref('gameState');
-                gameRef.on('value', (snapshot) => {
+                const listener = gameRef.on('value', (snapshot) => {
                     const data = snapshot.val();
+                    console.log('Firebase data received:', data);
                     if (data) {
-                        setGameState({
-                            currentClue: data.currentClue || -1,
+                        const newState = {
+                            currentClue: typeof data.currentClue === 'number' ? data.currentClue : -1,
                             clueStartTime: data.clueStartTime || null,
-                            guesses: data.guesses || [],
+                            guesses: Array.isArray(data.guesses) ? data.guesses : [],
                             revealed: data.revealed || false
-                        });
+                        };
+                        console.log('Setting new game state:', newState);
+                        setGameState(newState);
+                        setForceUpdate(prev => prev + 1);
                     }
+                }, (error) => {
+                    console.error('Firebase error:', error);
                 });
 
-                return () => gameRef.off();
+                return () => {
+                    gameRef.off('value', listener);
+                };
             }, []);
 
             useEffect(() => {
@@ -157,16 +178,24 @@
             }, [hasGuessed, submittedGuess, userName, hasEnteredName]);
 
             const updateGameState = async (newState) => {
-                await database.ref('gameState').set(newState);
+                console.log('Updating Firebase with:', newState);
+                try {
+                    await database.ref('gameState').set(newState);
+                    console.log('Firebase update successful');
+                } catch (error) {
+                    console.error('Firebase update failed:', error);
+                }
             };
 
             const startGame = async () => {
-                await updateGameState({
+                console.log('Starting game...');
+                const newState = {
                     currentClue: 0,
                     clueStartTime: Date.now(),
                     guesses: [],
                     revealed: false
-                });
+                };
+                await updateGameState(newState);
             };
 
             const nextClue = async () => {
@@ -210,9 +239,11 @@
                     timestamp: Date.now()
                 };
 
+                const currentGuesses = Array.isArray(gameState.guesses) ? gameState.guesses : [];
+
                 await updateGameState({
                     ...gameState,
-                    guesses: [...gameState.guesses, guess]
+                    guesses: [...currentGuesses, guess]
                 });
                 
                 setSubmittedGuess(userGuess.trim());
@@ -237,6 +268,8 @@
                 return `${minutes}:${seconds.toString().padStart(2, '0')}`;
             };
 
+            console.log('Rendering with gameState:', gameState);
+
             if (isAdmin) {
                 return (
                     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-pink-50 p-4">
@@ -247,6 +280,10 @@
                                 </CardHeader>
                                 <CardContent>
                                     <div className="space-y-4">
+                                        <div className="p-4 bg-gray-100 rounded text-sm font-mono">
+                                            Debug: currentClue = {gameState.currentClue}, 
+                                            guesses = {(gameState.guesses || []).length}
+                                        </div>
                                         {gameState.currentClue === -1 ? (
                                             <Button onClick={startGame} className="w-full bg-green-600">
                                                 Start Game (Reveal Clue 1)
@@ -362,6 +399,9 @@
                                     <div className="text-center py-8">
                                         <p className="text-xl">🎉 Welcome, {userName}!</p>
                                         <p className="text-gray-600 mt-4">The game hasn't started yet. Stay tuned!</p>
+                                        <p className="text-xs text-gray-400 mt-4">
+                                            Debug: currentClue = {gameState.currentClue}
+                                        </p>
                                     </div>
                                 ) : gameState.revealed ? (
                                     <div className="text-center py-8 space-y-6">
