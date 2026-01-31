@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guess Baby Merritt's Name!</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBMXpoOPqYGZHCLgIWaVdAB0kuiOL09UZg",
+            authDomain: "baby-merritt-trivia-game.firebaseapp.com",
+            databaseURL: "https://baby-merritt-trivia-game-default-rtdb.firebaseio.com",
+            projectId: "baby-merritt-trivia-game",
+            storageBucket: "baby-merritt-trivia-game.firebasestorage.app",
+            messagingSenderId: "480694794861",
+            appId: "1:480694794861:web:fe34b5b1d87de85b855d64"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        const CLUES = [
+            "A treat after you eat Chinese takeout and YOLO!",
+            "R&B concert in the quad, anyone?",
+            "Whenever, wherever, Whatever meets a jazz trumpet icon",
+            "Good to the last drop meets Sammy [blank] Jr."
+        ];
+
+        const CLUE_DURATION = 15 * 60 * 1000;
+        const CORRECT_ANSWER = "Maxwell Davis Merritt";
+
+        function Card({ children, className = "" }) {
+            return <div className={`bg-white rounded-lg shadow-lg ${className}`}>{children}</div>;
+        }
+
+        function CardHeader({ children }) {
+            return <div className="px-6 py-4 border-b">{children}</div>;
+        }
+
+        function CardTitle({ children, className = "" }) {
+            return <h2 className={`font-bold ${className}`}>{children}</h2>;
+        }
+
+        function CardContent({ children }) {
+            return <div className="px-6 py-4">{children}</div>;
+        }
+
+        function Button({ children, onClick, disabled, className = "" }) {
+            return (
+                <button
+                    onClick={onClick}
+                    disabled={disabled}
+                    className={`px-4 py-2 rounded font-medium transition-colors ${
+                        disabled 
+                            ? 'bg-gray-300 cursor-not-allowed' 
+                            : 'text-white hover:opacity-90'
+                    } ${className}`}
+                >
+                    {children}
+                </button>
+            );
+        }
+
+        function Input({ placeholder, value, onChange, onKeyPress, className = "" }) {
+            return (
+                <input
+                    type="text"
+                    placeholder={placeholder}
+                    value={value}
+                    onChange={onChange}
+                    onKeyPress={onKeyPress}
+                    className={`w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${className}`}
+                />
+            );
+        }
+
+        function Alert({ children, className = "" }) {
+            return <div className={`p-4 rounded border ${className}`}>{children}</div>;
+        }
+
+        function AlertDescription({ children, className = "" }) {
+            return <div className={className}>{children}</div>;
+        }
+
+        function App() {
+            const [isAdmin, setIsAdmin] = useState(false);
+            const [gameState, setGameState] = useState({
+                currentClue: -1,
+                clueStartTime: null,
+                guesses: [],
+                revealed: false
+            });
+            const [userGuess, setUserGuess] = useState('');
+            const [hasGuessed, setHasGuessed] = useState(false);
+            const [submittedGuess, setSubmittedGuess] = useState('');
+            const [timeRemaining, setTimeRemaining] = useState(0);
+            const [userName, setUserName] = useState('');
+            const [hasEnteredName, setHasEnteredName] = useState(false);
+
+            useEffect(() => {
+                const path = window.location.pathname + window.location.hash;
+                setIsAdmin(path.includes('admin'));
+
+                const userLocal = localStorage.getItem('babyNameUser');
+                if (userLocal) {
+                    const data = JSON.parse(userLocal);
+                    setHasGuessed(data.hasGuessed || false);
+                    setSubmittedGuess(data.submittedGuess || '');
+                    setUserName(data.userName || '');
+                    setHasEnteredName(data.hasEnteredName || false);
+                }
+
+                const gameRef = database.ref('gameState');
+                gameRef.on('value', (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        setGameState(data);
+                    }
+                });
+
+                return () => gameRef.off();
+            }, []);
+
+            useEffect(() => {
+                if (gameState.currentClue >= 0 && gameState.clueStartTime) {
+                    const interval = setInterval(() => {
+                        const elapsed = Date.now() - gameState.clueStartTime;
+                        const remaining = Math.max(0, CLUE_DURATION - elapsed);
+                        setTimeRemaining(remaining);
+                    }, 100);
+                    return () => clearInterval(interval);
+                }
+            }, [gameState.currentClue, gameState.clueStartTime]);
+
+            useEffect(() => {
+                const userData = { hasGuessed, submittedGuess, userName, hasEnteredName };
+                localStorage.setItem('babyNameUser', JSON.stringify(userData));
+            }, [hasGuessed, submittedGuess, userName, hasEnteredName]);
+
+            const updateGameState = async (newState) => {
+                await database.ref('gameState').set(newState);
+            };
+
+            const startGame = async () => {
+                await updateGameState({
+                    currentClue: 0,
+                    clueStartTime: Date.now(),
+                    guesses: [],
+                    revealed: false
+                });
+            };
+
+            const nextClue = async () => {
+                if (gameState.currentClue < CLUES.length - 1) {
+                    await updateGameState({
+                        ...gameState,
+                        currentClue: gameState.currentClue + 1,
+                        clueStartTime: Date.now()
+                    });
+                }
+            };
+
+            const resetGame = async () => {
+                await updateGameState({
+                    currentClue: -1,
+                    clueStartTime: null,
+                    guesses: [],
+                    revealed: false
+                });
+                setHasGuessed(false);
+                setSubmittedGuess('');
+                setUserName('');
+                setHasEnteredName(false);
+                localStorage.removeItem('babyNameUser');
+            };
+
+            const revealAnswer = async () => {
+                await updateGameState({
+                    ...gameState,
+                    revealed: true
+                });
+            };
+
+            const submitGuess = async () => {
+                if (!userGuess.trim() || !userName.trim()) return;
+
+                const guess = {
+                    name: userName,
+                    guess: userGuess.trim(),
+                    clue: gameState.currentClue + 1,
+                    timestamp: Date.now()
+                };
+
+                await updateGameState({
+                    ...gameState,
+                    guesses: [...gameState.guesses, guess]
+                });
+                
+                setSubmittedGuess(userGuess.trim());
+                setHasGuessed(true);
+                setUserGuess('');
+            };
+
+            const checkGuess = (guess) => {
+                const normalized = guess.toLowerCase().trim();
+                const correct = CORRECT_ANSWER.toLowerCase();
+                return normalized === correct || 
+                       normalized === "maxwell davis" ||
+                       normalized.replace(/\s+/g, '') === "maxwelldavis" ||
+                       normalized.replace(/\s+/g, '') === correct.replace(/\s+/g, '');
+            };
+
+            const correctGuesses = gameState.guesses.filter(g => checkGuess(g.guess));
+
+            const formatTime = (ms) => {
+                const minutes = Math.floor(ms / 60000);
+                const seconds = Math.floor((ms % 60000) / 1000);
+                return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            };
+
+            if (isAdmin) {
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-pink-50 p-4">
+                        <div className="max-w-4xl mx-auto">
+                            <Card className="mb-6">
+                                <CardHeader>
+                                    <CardTitle className="text-2xl text-center">🎮 Admin Panel - Baby Name Game</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="space-y-4">
+                                        {gameState.currentClue === -1 ? (
+                                            <Button onClick={startGame} className="w-full bg-green-600">
+                                                Start Game (Reveal Clue 1)
+                                            </Button>
+                                        ) : (
+                                            <>
+                                                <div className="text-center p-4 bg-blue-100 rounded-lg">
+                                                    <div className="text-lg font-bold">Current: Clue {gameState.currentClue + 1}</div>
+                                                    <div className="text-2xl font-mono mt-2">{formatTime(timeRemaining)}</div>
+                                                </div>
+                                                {gameState.currentClue < CLUES.length - 1 && (
+                                                    <Button onClick={nextClue} className="w-full bg-blue-600">
+                                                        Reveal Clue {gameState.currentClue + 2}
+                                                    </Button>
+                                                )}
+                                                {gameState.currentClue === CLUES.length - 1 && !gameState.revealed && (
+                                                    <Button onClick={revealAnswer} className="w-full bg-purple-600">
+                                                        🎉 Reveal the Answer!
+                                                    </Button>
+                                                )}
+                                                <Button onClick={resetGame} className="w-full bg-red-600">
+                                                    Reset Game
+                                                </Button>
+                                            </>
+                                        )}
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Submitted Guesses ({gameState.guesses.length})</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    {gameState.revealed && (
+                                        <div className="mb-6 p-6 bg-gradient-to-r from-purple-100 to-pink-100 rounded-lg border-2 border-purple-300">
+                                            <div className="text-center">
+                                                <div className="text-3xl font-bold text-purple-700 mb-4">
+                                                    👶🏾 {CORRECT_ANSWER} 🧸
+                                                </div>
+                                                {correctGuesses.length > 0 ? (
+                                                    <div>
+                                                        <div className="text-xl font-semibold text-green-700 mb-3">
+                                                            🎉 Correct Guesses! 🎉
+                                                        </div>
+                                                        <div className="space-y-2">
+                                                            {correctGuesses.map((g, idx) => (
+                                                                <div key={idx} className="p-3 bg-white rounded border-2 border-green-400">
+                                                                    <div className="font-bold text-green-700">{g.name}</div>
+                                                                    <div className="text-sm text-gray-600">Guessed after Clue {g.clue}</div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-lg text-gray-600">
+                                                        No one guessed correctly, but everyone had fun! 🎊
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+                                    <div className="space-y-2 max-h-96 overflow-y-auto">
+                                        {gameState.guesses.length === 0 ? (
+                                            <p className="text-gray-500 text-center py-4">No guesses yet...</p>
+                                        ) : (
+                                            gameState.guesses.map((g, idx) => (
+                                                <div key={idx} className="p-3 bg-gray-50 rounded border">
+                                                    <div className="flex justify-between items-start">
+                                                        <div>
+                                                            <div className="font-semibold">{g.name}</div>
+                                                            <div className="text-lg text-blue-600">{g.guess}</div>
+                                                        </div>
+                                                        <div className="text-sm text-gray-500">Clue {g.clue}</div>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-blue-50 to-pink-50 p-4">
+                    <div className="max-w-lg mx-auto">
+                        <Card className="mb-6">
+                            <CardHeader>
+                                <CardTitle className="text-2xl text-center">👶🏾 Guess Baby Merritt's Name! 🧸</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                {!hasEnteredName ? (
+                                    <div className="space-y-4">
+                                        <p className="text-center text-gray-600">Enter your name to play:</p>
+                                        <Input
+                                            placeholder="Your name"
+                                            value={userName}
+                                            onChange={(e) => setUserName(e.target.value)}
+                                            onKeyPress={(e) => e.key === 'Enter' && userName.trim() && setHasEnteredName(true)}
+                                        />
+                                        <Button 
+                                            onClick={() => setHasEnteredName(true)} 
+                                            disabled={!userName.trim()}
+                                            className="w-full bg-blue-600"
+                                        >
+                                            Let's Play!
+                                        </Button>
+                                    </div>
+                                ) : gameState.currentClue === -1 ? (
+                                    <div className="text-center py-8">
+                                        <p className="text-xl">🎉 Welcome, {userName}!</p>
+                                        <p className="text-gray-600 mt-4">The game hasn't started yet. Stay tuned!</p>
+                                    </div>
+                                ) : gameState.revealed ? (
+                                    <div className="text-center py-8 space-y-6">
+                                        <div className="text-4xl mb-4">🎊</div>
+                                        <div className="text-2xl font-bold text-purple-700">
+                                            Baby Merritt's Name Is...
+                                        </div>
+                                        <div className="text-4xl font-bold text-purple-900 my-6">
+                                            {CORRECT_ANSWER}
+                                        </div>
+                                        {hasGuessed && checkGuess(submittedGuess) ? (
+                                            <Alert className="bg-green-50 border-green-300">
+                                                <AlertDescription className="text-center">
+                                                    <div className="text-2xl mb-2">🎉🎉🎉</div>
+                                                    <div className="text-xl font-bold text-green-700">
+                                                        Congratulations, {userName}!
+                                                    </div>
+                                                    <div className="text-green-600 mt-2">
+                                                        You guessed correctly!
+                                                    </div>
+                                                </AlertDescription>
+                                            </Alert>
+                                        ) : hasGuessed ? (
+                                            <Alert className="bg-blue-50 border-blue-300">
+                                                <AlertDescription className="text-center">
+                                                    <div className="font-semibold text-blue-700">Your guess: {submittedGuess}</div>
+                                                    <div className="text-sm text-gray-600 mt-2">
+                                                        Thanks for playing, {userName}! 🎊
+                                                    </div>
+                                                </AlertDescription>
+                                            </Alert>
+                                        ) : (
+                                            <p className="text-gray-600">Thanks for joining us, {userName}! 🎊</p>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="space-y-6">
+                                        <div className="text-center">
+                                            <div className="text-sm text-gray-500 mb-2">Clue {gameState.currentClue + 1} of {CLUES.length}</div>
+                                            <div className="text-3xl font-mono font-bold text-blue-600 mb-4">
+                                                {formatTime(timeRemaining)}
+                                            </div>
+                                        </div>
+                                        <Alert className="bg-blue-50 border-blue-300">
+                                            <AlertDescription className="text-lg text-center font-medium">
+                                                {CLUES[gameState.currentClue]}
+                                            </AlertDescription>
+                                        </Alert>
+                                        {hasGuessed ? (
+                                            <div className="space-y-4">
+                                                <Alert className="bg-green-50 border-green-200">
+                                                    <AlertDescription className="text-center">
+                                                        <div className="font-semibold mb-1">Your Guess:</div>
+                                                        <div className="text-xl text-green-700">{submittedGuess}</div>
+                                                    </AlertDescription>
+                                                </Alert>
+                                                <p className="text-center text-gray-600 text-sm">
+                                                    Wait for the next clue or the final reveal!
+                                                </p>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-4">
+                                                <p className="text-center text-sm text-gray-600">
+                                                    Remember: You can only guess ONCE!
+                                                    <br />Wait for more clues if you're not sure.
+                                                </p>
+                                                <Input
+                                                    placeholder="Enter your guess (First Middle Last)"
+                                                    value={userGuess}
+                                                    onChange={(e) => setUserGuess(e.target.value)}
+                                                    onKeyPress={(e) => e.key === 'Enter' && submitGuess()}
+                                                />
+                                                <Button onClick={submitGuess} disabled={!userGuess.trim()} className="w-full bg-blue-600">
+                                                    Submit My Guess
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+                        <div className="text-center text-sm text-gray-500">
+                            <p>March 7th 2026 Baby Shower for Alexis & Mike 🍼</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
