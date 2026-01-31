@@ -128,7 +128,12 @@
                 gameRef.on('value', (snapshot) => {
                     const data = snapshot.val();
                     if (data) {
-                        setGameState(data);
+                        setGameState({
+                            currentClue: data.currentClue || -1,
+                            clueStartTime: data.clueStartTime || null,
+                            guesses: data.guesses || [],
+                            revealed: data.revealed || false
+                        });
                     }
                 });
 
@@ -224,7 +229,7 @@
                        normalized.replace(/\s+/g, '') === correct.replace(/\s+/g, '');
             };
 
-            const correctGuesses = gameState.guesses.filter(g => checkGuess(g.guess));
+            const correctGuesses = (gameState.guesses || []).filter(g => checkGuess(g.guess));
 
             const formatTime = (ms) => {
                 const minutes = Math.floor(ms / 60000);
@@ -273,7 +278,7 @@
 
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>Submitted Guesses ({gameState.guesses.length})</CardTitle>
+                                    <CardTitle>Submitted Guesses ({(gameState.guesses || []).length})</CardTitle>
                                 </CardHeader>
                                 <CardContent>
                                     {gameState.revealed && (
@@ -305,7 +310,7 @@
                                         </div>
                                     )}
                                     <div className="space-y-2 max-h-96 overflow-y-auto">
-                                        {gameState.guesses.length === 0 ? (
+                                        {(!gameState.guesses || gameState.guesses.length === 0) ? (
                                             <p className="text-gray-500 text-center py-4">No guesses yet...</p>
                                         ) : (
                                             gameState.guesses.map((g, idx) => (
