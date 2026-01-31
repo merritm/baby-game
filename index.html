@@ -294,6 +294,14 @@
                                                     <div className="text-lg font-bold">Current: Clue {gameState.currentClue + 1}</div>
                                                     <div className="text-2xl font-mono mt-2">{formatTime(timeRemaining)}</div>
                                                 </div>
+                                                <Alert className="bg-purple-50 border-purple-300">
+                                                    <AlertDescription className="text-center">
+                                                        <div className="text-sm font-semibold text-purple-700 mb-2">CLUE {gameState.currentClue + 1}:</div>
+                                                        <div className="text-xl font-medium text-purple-900">
+                                                            {CLUES[gameState.currentClue]}
+                                                        </div>
+                                                    </AlertDescription>
+                                                </Alert>
                                                 {gameState.currentClue < CLUES.length - 1 && (
                                                     <Button onClick={nextClue} className="w-full bg-blue-600">
                                                         Reveal Clue {gameState.currentClue + 2}
