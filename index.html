@@ -157,12 +157,35 @@
                         setGameState(newState);
                         setForceUpdate(prev => prev + 1);
                         
-                        // Detect reset and reload page for non-admin users
+                        // Check if game was reset - if Firebase shows game hasn't started but user has local data, clear it
+                        if (newState.currentClue === -1 && newState.guesses.length === 0 && !adminMode) {
+                            const userLocal = localStorage.getItem('babyNameUser');
+                            if (userLocal) {
+                                try {
+                                    const userData = JSON.parse(userLocal);
+                                    if (userData.hasGuessed) {
+                                        // Game was reset, clear user data
+                                        console.log('Detected game reset, clearing user data');
+                                        localStorage.removeItem('babyNameUser');
+                                        setHasGuessed(false);
+                                        setSubmittedGuess('');
+                                        setUserName('');
+                                        setHasEnteredName(false);
+                                    }
+                                } catch (e) {
+                                    console.error('Error checking user data:', e);
+                                }
+                            }
+                        }
+                        
+                        // Detect reset timestamp change and force reload
                         if (data.resetTimestamp && data.resetTimestamp !== lastResetTimestamp && !adminMode) {
                             setLastResetTimestamp(data.resetTimestamp);
-                            setTimeout(() => {
-                                window.location.reload(true);
-                            }, 500);
+                            // Clear everything before reload
+                            localStorage.clear();
+                            sessionStorage.clear();
+                            // Hard reload with cache bust
+                            window.location.href = window.location.href.split('?')[0] + '?t=' + Date.now();
                         }
                     }
                 }, (error) => {
